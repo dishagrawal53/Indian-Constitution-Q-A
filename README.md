@@ -1,4 +1,4 @@
-<h1 align="center">📜 Constitution of India – RAG Chatbot</h1>
+<h1 align="center"> Constitution of India – RAG Chatbot</h1>
 
 <p align="center">
   <strong>An AI-powered Retrieval-Augmented Generation (RAG) chatbot built using FAISS, MiniLM embeddings, and a large language model.</strong>
