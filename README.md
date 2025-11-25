@@ -1,7 +1,7 @@
 <h1 align="center"> Constitution of India – RAG Chatbot</h1>
 
 <p align="center">
-  <strong>An AI-powered Retrieval-Augmented Generation (RAG) chatbot built using FAISS, MiniLM embeddings, and a large language model.</strong>
+  <strong>An AI-powered Retrieval-Augmented Generation (RAG) chatbot built using LangChain, FAISS, MiniLM embeddings, and a large language model.</strong>
 </p>
 
 <p align="center">
@@ -13,13 +13,22 @@
 <h2> Overview</h2>
 
 <p>
-This project is an intelligent chatbot that answers questions about the <strong>Constitution of India</strong> using a 
-Retrieval-Augmented Generation (RAG) pipeline. It retrieves the most relevant constitutional text from a 
-FAISS vector index and sends the enriched context to a strong instruction-tuned language model hosted on Hugging Face.
+This project is an intelligent chatbot that answers questions about the <strong>Constitution of India</strong> using a Retrieval-Augmented Generation (RAG) architecture powered by <strong>LangChain</strong>. 
 </p>
 
 <p>
-The goal is to provide <strong>clear, accurate, article-based responses</strong> about constitutional concepts, fundamental rights, duties, amendments, and more — all through a simple Gradio interface.
+LangChain serves as the core framework that handles:
+<ul>
+  <li>Document Loading</li>
+  <li>Text Splitting</li>
+  <li>Embedding Generation</li>
+  <li>FAISS Vector Store Creation</li>
+  <li>Retriever Logic</li>
+</ul>
+</p>
+
+<p>
+The final system retrieves the most relevant constitutional text and passes it to an instruction-tuned LLM hosted on Hugging Face to generate clear, accurate, article-based answers.
 </p>
 
 <hr/>
@@ -29,8 +38,8 @@ The goal is to provide <strong>clear, accurate, article-based responses</strong>
 <pre>
 Root Directory
 │
-├── app.py                 → Gradio RAG chatbot that loads FAISS and answers queries
-├── vector_generator.ipynb → Notebook used to generate the FAISS index from the Constitution PDF
+├── app.py                 → Gradio RAG chatbot using LangChain retriever + HF Inference API
+├── vector_generator.ipynb → Notebook for creating the FAISS index using LangChain utilities
 │
 ├── index.faiss            → FAISS vector index (embeddings)
 ├── index.pkl              → Metadata for vector index
@@ -40,30 +49,40 @@ Root Directory
 
 <hr/>
 
-<h2>🔍 How It Works</h2>
+<h2> How It Works</h2>
 
 <ul>
-  <li><strong>1. Text Extraction & Chunking:</strong> The Constitution PDF is loaded and split into overlapping text chunks.</li>
-  <li><strong>2. Embedding Generation:</strong> Each chunk is converted into embeddings using 
-      <code>sentence-transformers/all-MiniLM-L6-v2</code>.</li>
-  <li><strong>3. FAISS Index Creation:</strong> All embeddings are stored in a FAISS vector store for efficient similarity search.</li>
-  <li><strong>4. Query Processing:</strong> When a user asks a question, relevant chunks are retrieved using vector similarity.</li>
-  <li><strong>5. RAG Response:</strong> Retrieved context is merged into the system prompt and sent to an LLM 
-      (Qwen2.5-72B-Instruct).</li>
-  <li><strong>6. Gradio UI:</strong> Users interact with a simple chat interface to ask constitutional questions.</li>
+  <li><strong>1. PDF Loading (LangChain):</strong> The Constitution PDF is loaded using LangChain’s <code>PyPDFLoader</code>.</li>
+
+  <li><strong>2. Text Chunking (LangChain):</strong> The text is split into overlapping chunks using 
+      <code>RecursiveCharacterTextSplitter</code> for optimal retrieval.</li>
+
+  <li><strong>3. Embedding Generation (LangChain):</strong> Each chunk is converted into embeddings using 
+      <code>HuggingFaceEmbeddings</code> (<code>MiniLM-L6-v2</code>).</li>
+
+  <li><strong>4. FAISS Index Creation (LangChain):</strong> A FAISS vector store is built using 
+      <code>FAISS.from_documents()</code> and saved for fast retrieval.</li>
+
+  <li><strong>5. Query Retrieval (LangChain):</strong> A retriever is created using 
+      <code>vectorstore.as_retriever()</code> to fetch the top relevant chunks.</li>
+
+  <li><strong>6. RAG Response:</strong> Retrieved context is embedded into the system prompt and sent to a large model 
+      (Qwen2.5-72B-Instruct) via Hugging Face Inference API.</li>
+
+  <li><strong>7. Gradio Interface:</strong> The user interacts with a ChatInterface that streams model responses.</li>
 </ul>
 
 <hr/>
 
-<h2>🚀 Features</h2>
+<h2> Features</h2>
 
 <ul>
-  <li> Retrieval-Augmented Generation for accurate, context-driven answers</li>
-  <li> FAISS vector search over the full Constitution of India</li>
-  <li> Automatic retrieval of relevant Articles, Parts, and clauses</li>
-  <li> LLM-powered responses with citations when appropriate</li>
-  <li>Gradio Chat UI with system prompts, temperature, top-p controls</li>
-  <li> Notebook included for regenerating FAISS index any time</li>
+  <li>LangChain-based RAG pipeline</li>
+  <li>FAISS vector search over the entire Constitution of India</li>
+  <li>MiniLM embeddings for fast retrieval</li>
+  <li>Accurate, context-driven answers with article references</li>
+  <li>Gradio Chat UI with temperature, top-p, and max-token controls</li>
+  <li>Notebook included for regenerating the FAISS index</li>
   <li>Fully deployable on Hugging Face Spaces</li>
 </ul>
 
@@ -72,52 +91,37 @@ Root Directory
 <h2> Files Explained</h2>
 
 <h3><code>vector_generator.ipynb</code></h3>
+
 <p>
-This Jupyter notebook handles the creation of the FAISS index.  
-It performs PDF loading, text chunking, embedding generation, and saving of:
+A complete LangChain-based workflow for generating the FAISS vector index.  
+It includes:
 </p>
 
 <ul>
-  <li><code>index.faiss</code></li>
-  <li><code>index.pkl</code></li>
+  <li>Loading the Constitution PDF using <strong>PyPDFLoader</strong></li>
+  <li>Chunking using <strong>RecursiveCharacterTextSplitter</strong></li>
+  <li>Generating embeddings with <strong>HuggingFaceEmbeddings</strong></li>
+  <li>Creating and saving a <strong>FAISS vector store</strong></li>
 </ul>
 
-<p>It is designed to run easily on platforms like <strong>Kaggle</strong>.</p>
+<p>This notebook is optimized for platforms like <strong>Kaggle</strong>.</p>
 
-<h3> <code>app.py</code></h3>
+<h3><code>app.py</code></h3>
+
 <p>
-The main Gradio application.  
-It loads the FAISS vector store, retrieves the most relevant text for each query, and sends it to the LLM along with a custom system prompt.
+The main Gradio application using LangChain for retrieval and Hugging Face for generation.  
+It:
 </p>
 
-<p>The app uses:</p>
 <ul>
-  <li>FAISS retriever</li>
-  <li>MiniLM embeddings</li>
-  <li>Hugging Face Inference API</li>
-  <li>Gradio ChatInterface</li>
+  <li>Loads FAISS via LangChain</li>
+  <li>Creates a retriever with <code>vectorstore.as_retriever()</code></li>
+  <li>Retrieves relevant chunks for every user query</li>
+  <li>Streams model output to the Gradio ChatInterface</li>
 </ul>
 
-<hr/>
-
-<h2>Usage</h2>
-
-<p>To run the chatbot locally:</p>
-
-<ol>
-  <li>Install dependencies from <code>requirements.txt</code></li>
-  <li>Place <code>index.faiss</code> and <code>index.pkl</code> in the project root</li>
-  <li>Set your Hugging Face API token as <code>HF_TOKEN</code></li>
-  <li>Run <code>python app.py</code></li>
-</ol>
-
-<p>This will start the Gradio interface on <code>http://localhost:7860</code>.</p>
 
 <hr/>
-
-<h2>Deployment (Hugging Face Spaces)</h2>
-
-
 
 <h2> Example Questions Users Can Ask</h2>
 
@@ -136,7 +140,8 @@ It loads the FAISS vector store, retrieves the most relevant text for each query
 <ul>
   <li>The Constitution of India (Public Domain)</li>
   <li>Hugging Face – Inference API & Model Hosting</li>
-  <li>LangChain & FAISS</li>
+  <li>LangChain Framework</li>
+  <li>FAISS Vector Search Library</li>
   <li>Gradio UI Framework</li>
 </ul>
 
